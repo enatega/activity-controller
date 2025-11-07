@@ -2,7 +2,7 @@
   "name": "activity-controller",
   "version": "1.0.0",
   "description": "Custom Expo module for Live Activities",
-  "main": "build/index.js",
+  "main": "index.ts",
   "types": "index.ts",
   "author": "Enatega",
   "license": "MIT",
