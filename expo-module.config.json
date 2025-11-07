@@ -1,4 +1,5 @@
 {
+"name": "activity-controller",
   "platforms": ["apple"],
   "ios": {
     "modules": ["ActivityControllerModule"]
