@@ -1,0 +1,18 @@
+<manifest package="com.enatega.activitycontroller"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- If your host app targets Android 13 or above and wants to post notifications, the app must request
+         POST_NOTIFICATIONS at runtime. Module cannot request runtime permissions automatically. -->
+
+    <application>
+        <!-- BroadcastReceiver for updates (data-only push or explicit intent updates) -->
+        <receiver
+            android:name="com.enatega.activitycontroller.ActivityUpdateReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.enatega.activitycontroller.ACTION_UPDATE_ACTIVITY" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
