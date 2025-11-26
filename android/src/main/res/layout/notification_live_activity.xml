@@ -1,62 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root"
+    android:id="@+id/notification_root"
     android:layout_width="match_parent"
-    android:layout_height="72dp"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
-    android:background="@android:color/transparent">
+    android:background="@android:color/white">
 
     <ImageView
         android:id="@+id/ivIcon"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="8dp"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/app_name" />
+        android:src="@drawable/ic_placeholder_image"
+        android:contentDescription="Icon" />
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_marginStart="8dp"
         android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_height="wrap_content">
+        android:orientation="vertical">
+
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Title"
             android:textSize="16sp"
+            android:textColor="@android:color/black"
             android:maxLines="1"
             android:ellipsize="end" />
 
         <TextView
             android:id="@+id/tvSubtitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Subtitle"
-            android:textSize="13sp"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- Add these two to fix your errors -->
+        <TextView
+            android:id="@+id/tvTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Total"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
             android:maxLines="1"
             android:ellipsize="end" />
 
         <TextView
-            android:id="@+id/tvTotal"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvOrderId"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total: $0"
-            android:textSize="13sp" />
+            android:text="Order ID"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Status"
-            android:textSize="13sp" />
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:maxLines="1"
+            android:ellipsize="end" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvOrderId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Order ID"
-        android:textSize="12sp" />
 </LinearLayout>
