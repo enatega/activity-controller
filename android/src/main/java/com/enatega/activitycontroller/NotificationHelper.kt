@@ -10,7 +10,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import com.activitycontroller.R
+import com.enatega.activitycontroller.R
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
