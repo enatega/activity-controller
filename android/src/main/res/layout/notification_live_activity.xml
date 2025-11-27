@@ -1,76 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/notification_root"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp"
-    android:background="@android:color/white">
 
+
+    android:layout_margin="8dp">
+
+    <!-- Left item image -->
     <ImageView
-        android:id="@+id/ivIcon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="8dp"
+        android:id="@+id/ivItemImage"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_placeholder_image"
-        android:contentDescription="Icon" />
+        android:contentDescription="Item image"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="12dp" />
 
+    <!-- Title and total -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:id="@+id/text_group"
+        android:layout_toEndOf="@id/ivItemImage"
+        android:layout_alignTop="@id/ivItemImage"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvTitle"
+            android:id="@+id/tvItemName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Title"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
+            android:text="Item name"
+            android:textSize="18sp"
+            android:textColor="#000000"
             android:maxLines="1"
             android:ellipsize="end" />
 
         <TextView
-            android:id="@+id/tvSubtitle"
+            android:id="@+id/tvTotalAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Subtitle"
+            android:text="Total: $0"
             android:textSize="14sp"
-            android:textColor="@android:color/black"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <!-- Add these two to fix your errors -->
-        <TextView
-            android:id="@+id/tvTotal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Total"
-            android:textSize="14sp"
-            android:textColor="@android:color/black"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/tvOrderId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Order ID"
-            android:textSize="14sp"
-            android:textColor="@android:color/black"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Status"
-            android:textSize="14sp"
-            android:textColor="@android:color/black"
+            android:textColor="#666666"
             android:maxLines="1"
             android:ellipsize="end" />
     </LinearLayout>
-</LinearLayout>
+
+    <!-- Progress bar area -->
+    <ImageView
+        android:id="@+id/ivDriver"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/moped"
+        android:contentDescription="Driver"
+        android:layout_below="@id/ivItemImage"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="4dp"
+        android:translationX="0dp"
+        android:translationY="-7dp"
+        />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_toEndOf="@id/ivDriver"
+        android:layout_alignTop="@id/ivDriver"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="8dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_bar_custom"
+        android:indeterminate="false" />
+
+    <!-- Status and order id on the same row -->
+    <TextView
+        android:id="@+id/tvOrderStatus"
+        android:layout_below="@id/progressBar"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="12dp"
+        android:text="Pending"
+        android:textSize="16sp"
+        android:textColor="#333333"  android:layout_height="wrap_content" android:layout_width="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvOrderId"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/progressBar"
+        android:layout_marginTop="12dp"
+        android:text="Order ID: -"
+        android:textSize="14sp"
+        android:textColor="#333333" android:layout_height="wrap_content" android:layout_width="wrap_content"/>
+</RelativeLayout>

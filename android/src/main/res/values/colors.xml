@@ -1,3 +1,5 @@
 <resources>
     <color name="notification_bg">#000000</color>
+    <color name="notificationCardBg_light">#FFFFFFFF</color>
+    <color name="notificationCardBg_dark">#1A1A1A</color>
 </resources>
