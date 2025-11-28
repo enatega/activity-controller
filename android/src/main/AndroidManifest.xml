@@ -6,11 +6,19 @@
 
     <application>
         <!-- BroadcastReceiver for updates (data-only push or explicit intent updates) -->
+<!--        <receiver-->
+<!--            android:name="com.enatega.activitycontroller.ActivityUpdateReceiver"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.enatega.activitycontroller.ACTION_UPDATE_ACTIVITY" />-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
         <receiver
             android:name="com.enatega.activitycontroller.ActivityUpdateReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
-                <action android:name="com.enatega.activitycontroller.ACTION_UPDATE_ACTIVITY" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </receiver>
     </application>

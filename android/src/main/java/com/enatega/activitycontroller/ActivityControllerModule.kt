@@ -9,7 +9,7 @@ import org.json.JSONObject
 
 class ActivityControllerModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
-    private val helper = NotificationHelper(reactContext)
+    private val helper = NotificationHelper.getInstance(reactContext)
 
     override fun getName() = "ActivityController"
 
