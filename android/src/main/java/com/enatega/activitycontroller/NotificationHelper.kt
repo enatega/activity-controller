@@ -408,7 +408,7 @@ class NotificationHelper private constructor(private val ctx: Context) {
         )
 
         return NotificationCompat.Builder(ctx, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.icon)
             .setCustomContentView(view)
             .setCustomBigContentView(view)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
@@ -433,7 +433,7 @@ class NotificationHelper private constructor(private val ctx: Context) {
 
         // text fields
         view.setTextViewText(R.id.tvItemName, itemName ?: "")
-        view.setTextViewText(R.id.tvTotalAmount, if (!totalAmount.isNullOrEmpty()) "Total: $${totalAmount}" else "")
+        view.setTextViewText(R.id.tvTotalAmount, if (!totalAmount.isNullOrEmpty()) "Total: ${totalAmount}" else "")
         view.setTextViewText(R.id.tvOrderStatus, orderStatus ?: "")
         view.setTextViewText(R.id.tvOrderId, "Order ID: $orderId")
 
