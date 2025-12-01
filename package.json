@@ -7,7 +7,6 @@
   "main": "index.ts",
   "scripts": {},
   "keywords": ["react-native", "live-activity", "iOS"],
-  "files": ["ios", "index.js", "index.ts"],
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
