@@ -1,21 +1,17 @@
+
+
 {
-  "name": "activity-controller",
+   "name": "activity-controller",
   "version": "1.0.0",
   "description": "Custom Expo module for Live Activities",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "author": "Enatega",
-  "license": "MIT",
-  "expo": {
-    "autolinking": {
-      "ios": {
-        "modulesClassNames": ["ActivityControllerModule"]
-      }
-    }
-  },
-  "react-native": "src/index.ts",
+  "main": "index.ts",
+  "scripts": {},
+  "keywords": ["react-native", "live-activity", "iOS"],
   "peerDependencies": {
-    "react-native": "*"
-  
+    "react": ">=18.0.0",
+    "react-native": ">=0.72.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
   }
 }

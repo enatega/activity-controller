@@ -1,6 +1,13 @@
-// Reexport the native module. On web, it will be resolved to ActivityControllerModule.web.ts
-// and on native platforms to ActivityControllerModule.ts
+import { NativeModules } from 'react-native';
 
-export * from  './src/ActivityController.types';
-export * from "./src/ActivityControllerModule";
+const { ActivityControllerModuleBridge } = NativeModules;
 
+export default {
+  areLiveActivitiesEnabled: () => ActivityControllerModuleBridge.areLiveActivitiesEnabled(),
+  startLiveActivity: (rawData: string) => ActivityControllerModuleBridge.startLiveActivity(rawData),
+  updateLiveActivity: (rawData: string) => ActivityControllerModuleBridge.updateLiveActivity(rawData),
+  stopLiveActivity: () => ActivityControllerModuleBridge.stopLiveActivity(),
+  isLiveActivityRunning: () => ActivityControllerModuleBridge.isLiveActivityRunning(),
+  saveImageToAppGroup: (url: string) => ActivityControllerModuleBridge.saveImageToAppGroup(url),
+  cleanAppGroupImages: (maxAgeHours: number) => ActivityControllerModuleBridge.cleanAppGroupImages(maxAgeHours)
+};
