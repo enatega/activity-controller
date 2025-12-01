@@ -14,11 +14,8 @@
     }
   },
   "react-native": "src/index.ts",
-  "dependencies": {
-    "expo-modules-core": "*"
-  },
   "peerDependencies": {
-    "react-native": "*",
-    "expo": "*"
+    "react-native": "*"
+  
   }
 }
