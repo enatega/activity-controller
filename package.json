@@ -2,8 +2,8 @@
   "name": "activity-controller",
   "version": "1.0.0",
   "description": "Custom Expo module for Live Activities",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "author": "Enatega",
   "license": "MIT",
   "expo": {
@@ -12,5 +12,13 @@
         "modulesClassNames": ["ActivityControllerModule"]
       }
     }
+  },
+  "react-native": "src/index.ts",
+  "dependencies": {
+    "expo-modules-core": "*"
+  },
+  "peerDependencies": {
+    "react-native": "*",
+    "expo": "*"
   }
 }
