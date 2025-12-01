@@ -30,10 +30,15 @@ fileprivate struct UpdateParams: Decodable {
 }
 
 // MARK: - React Native Bridge
-@objc(ActivityController) // <- THIS MAKES IT AVAILABLE IN NativeModules.ActivityController
-class ActivityControllerModuleBridge: NSObject {
+@objc(ActivityController)
+class ActivityController: NSObject, RCTBridgeModule {
+
+    // Required by React Native
+    static func moduleName() -> String! { "ActivityController" }
+    static func requiresMainQueueSetup() -> Bool { false }
 
     // MARK: - Live Activities
+
     @objc
     func areLiveActivitiesEnabled(_ resolve: @escaping RCTPromiseResolveBlock,
                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
@@ -51,14 +56,21 @@ class ActivityControllerModuleBridge: NSObject {
         Task {
             do {
                 guard #available(iOS 16.2, *) else {
-                    throw ActivityUnavailableException(())
+                    reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system", nil)
+                    return
                 }
 
                 let data = Data(rawData.utf8)
                 let params = try JSONDecoder().decode(StartParams.self, from: data)
 
                 guard Activity<DeliveryAttributes>.activities.isEmpty else {
-                    throw ActivityUnavailableException(())
+                    reject("ACTIVITY_ALREADY_RUNNING", "A live activity is already running", nil)
+                    return
+                }
+
+                guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+                    reject("ACTIVITY_NOT_AUTHORIZED", "Live activities are not authorized", nil)
+                    return
                 }
 
                 let attributes = DeliveryAttributes(
@@ -104,10 +116,13 @@ class ActivityControllerModuleBridge: NSObject {
         Task {
             do {
                 guard #available(iOS 16.2, *) else {
-                    throw ActivityUnavailableException(())
+                    reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system", nil)
+                    return
                 }
+
                 guard let activity = Activity<DeliveryAttributes>.activities.first else {
-                    throw ActivityUnavailableException(())
+                    reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
+                    return
                 }
 
                 let data = Data(rawData.utf8)
@@ -133,10 +148,13 @@ class ActivityControllerModuleBridge: NSObject {
         Task {
             do {
                 guard #available(iOS 16.2, *) else {
-                    throw ActivityUnavailableException(())
+                    reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system", nil)
+                    return
                 }
+
                 guard let activity = Activity<DeliveryAttributes>.activities.first else {
-                    throw ActivityUnavailableException(())
+                    reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
+                    return
                 }
 
                 await activity.end(dismissalPolicy: .immediate)
@@ -158,6 +176,7 @@ class ActivityControllerModuleBridge: NSObject {
     }
 
     // MARK: - App Group Image Helpers
+
     @objc
     func saveImageToAppGroup(_ imageUrl: String,
                              resolver resolve: @escaping RCTPromiseResolveBlock,
@@ -184,7 +203,7 @@ class ActivityControllerModuleBridge: NSObject {
                 }
 
                 let (data, response) = try await URLSession.shared.data(from: url)
-                guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                     throw GenericException("Failed to download image")
                 }
 
