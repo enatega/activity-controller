@@ -7,9 +7,10 @@
   "main": "index.ts",
   "scripts": {},
   "keywords": ["react-native", "live-activity", "iOS"],
+  "files": ["ios", "index.js", "index.ts"],
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-native": ">=0.72.0"
+    "react": "*",
+    "react-native": "*"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

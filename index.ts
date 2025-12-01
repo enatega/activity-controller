@@ -1,13 +1,13 @@
 import { NativeModules } from 'react-native';
 
-const { ActivityControllerModuleBridge } = NativeModules;
+const { ActivityController } = NativeModules;
 
 export default {
-  areLiveActivitiesEnabled: () => ActivityControllerModuleBridge.areLiveActivitiesEnabled(),
-  startLiveActivity: (rawData: string) => ActivityControllerModuleBridge.startLiveActivity(rawData),
-  updateLiveActivity: (rawData: string) => ActivityControllerModuleBridge.updateLiveActivity(rawData),
-  stopLiveActivity: () => ActivityControllerModuleBridge.stopLiveActivity(),
-  isLiveActivityRunning: () => ActivityControllerModuleBridge.isLiveActivityRunning(),
-  saveImageToAppGroup: (url: string) => ActivityControllerModuleBridge.saveImageToAppGroup(url),
-  cleanAppGroupImages: (maxAgeHours: number) => ActivityControllerModuleBridge.cleanAppGroupImages(maxAgeHours)
+  areLiveActivitiesEnabled: ActivityController.areLiveActivitiesEnabled,
+  startLiveActivity: ActivityController.startLiveActivity,
+  updateLiveActivity: ActivityController.updateLiveActivity,
+  stopLiveActivity: ActivityController.stopLiveActivity,
+  isLiveActivityRunning: ActivityController.isLiveActivityRunning,
+  saveImageToAppGroup: ActivityController.saveImageToAppGroup,
+  cleanAppGroupImages: ActivityController.cleanAppGroupImages,
 };
