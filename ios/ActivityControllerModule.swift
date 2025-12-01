@@ -1,245 +1,169 @@
 import Foundation
 import ActivityKit
-import React
+import OSLog
 
-// MARK: - Exceptions
-final class ActivityUnavailableException: GenericException<Void> {
-    override var reason: String { "Live activities are not available on this system." }
-}
-
-final class ActivityDataException: GenericException<String> {
-    override var reason: String { "Failed to parse Live Activity data: \(param)" }
-}
-
-// MARK: - Params
-fileprivate struct StartParams: Decodable {
-    let orderStatus: String
-    let estimatedDelivery: String
-    let progress: Double
-    let orderId: String
-    let itemName: String
-    let totalAmount: String
-    let vehicleNumber: String
-    let itemImageUrl: String
-}
-
-fileprivate struct UpdateParams: Decodable {
-    let orderStatus: String
-    let estimatedDelivery: String
-    let progress: Double
-}
-
-// MARK: - React Native Bridge
 @objc(ActivityController)
-class ActivityController: NSObject, RCTBridgeModule {
+class ActivityControllerModule: NSObject {
 
-    // Required by React Native
-    static func moduleName() -> String! { "ActivityController" }
-    static func requiresMainQueueSetup() -> Bool { false }
-
-    // MARK: - Live Activities
-
+    // MARK: - Check if Live Activities are enabled
     @objc
     func areLiveActivitiesEnabled(_ resolve: @escaping RCTPromiseResolveBlock,
                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
-        if #available(iOS 16.2, *) {
-            resolve(ActivityAuthorizationInfo().areActivitiesEnabled)
+        if ActivityAuthorizationInfo().areActivitiesEnabled {
+            resolve(true)
         } else {
             resolve(false)
         }
     }
 
+    // MARK: - Start Live Activity
     @objc
     func startLiveActivity(_ rawData: String,
                            resolver resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
-        Task {
-            do {
-                guard #available(iOS 16.2, *) else {
-                    reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system", nil)
-                    return
-                }
+        do {
+            let data = try parseStartData(rawData)
+            let attributes = DeliveryAttributes(
+                orderId: data.orderId,
+                itemName: data.itemName,
+                totalAmount: data.totalAmount,
+                vehicleNumber: data.vehicleNumber,
+                itemImageUrl: data.itemImageUrl
+            )
 
-                let data = Data(rawData.utf8)
-                let params = try JSONDecoder().decode(StartParams.self, from: data)
+            let contentState = DeliveryAttributes.ContentState(
+                orderStatus: data.orderStatus,
+                estimatedDelivery: data.estimatedDelivery,
+                progress: data.progress
+            )
 
-                guard Activity<DeliveryAttributes>.activities.isEmpty else {
-                    reject("ACTIVITY_ALREADY_RUNNING", "A live activity is already running", nil)
-                    return
-                }
-
-                guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-                    reject("ACTIVITY_NOT_AUTHORIZED", "Live activities are not authorized", nil)
-                    return
-                }
-
-                let attributes = DeliveryAttributes(
-                    orderId: params.orderId,
-                    itemName: params.itemName,
-                    totalAmount: params.totalAmount,
-                    vehicleNumber: params.vehicleNumber,
-                    itemImageUrl: params.itemImageUrl
-                )
-
-                let contentState = DeliveryAttributes.ContentState(
-                    orderStatus: params.orderStatus,
-                    estimatedDelivery: params.estimatedDelivery,
-                    progress: params.progress
-                )
-
+            if #available(iOS 16.1, *) {
                 let activity = try Activity<DeliveryAttributes>.request(
                     attributes: attributes,
-                    contentState: contentState,
-                    pushType: .token
+                    contentState: contentState
                 )
-
-                var tokenString = ""
-                for await data in activity.pushTokenUpdates {
-                    tokenString = data.map { String(format: "%02x", $0) }.joined()
-                    break
-                }
-
-                resolve([
-                    "activityId": activity.id,
-                    "pushToken": tokenString
-                ])
-            } catch {
-                reject("START_LIVE_ACTIVITY_ERROR", error.localizedDescription, error)
+                resolve(activity.id)
+            } else {
+                resolve(nil)
             }
+
+        } catch let error as ActivityControllerError {
+            reject("START_ERROR", error.reason, error)
+
+        } catch {
+            reject("START_ERROR", error.localizedDescription, error)
         }
     }
 
+    // MARK: - Update Live Activity
     @objc
     func updateLiveActivity(_ rawData: String,
                             resolver resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        Task {
+        if #available(iOS 16.1, *) {
             do {
-                guard #available(iOS 16.2, *) else {
-                    reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system", nil)
-                    return
-                }
+                let data = try parseUpdateData(rawData)
 
-                guard let activity = Activity<DeliveryAttributes>.activities.first else {
-                    reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
-                    return
-                }
-
-                let data = Data(rawData.utf8)
-                let params = try JSONDecoder().decode(UpdateParams.self, from: data)
-
-                let updatedState = DeliveryAttributes.ContentState(
-                    orderStatus: params.orderStatus,
-                    estimatedDelivery: params.estimatedDelivery,
-                    progress: params.progress
+                let contentState = DeliveryAttributes.ContentState(
+                    orderStatus: data.orderStatus,
+                    estimatedDelivery: data.estimatedDelivery,
+                    progress: data.progress
                 )
 
-                await activity.update(using: updatedState)
-                resolve(nil)
+                let activities = Activity<DeliveryAttributes>.activities
+
+                if let activity = activities.first {
+                    Task {
+                        await activity.update(using: contentState)
+                        resolve(true)
+                    }
+                } else {
+                    reject("UPDATE_ERROR", "No running activity found", nil)
+                }
+
+            } catch let error as ActivityControllerError {
+                reject("UPDATE_ERROR", error.reason, error)
+
             } catch {
-                reject("UPDATE_LIVE_ACTIVITY_ERROR", error.localizedDescription, error)
+                reject("UPDATE_ERROR", error.localizedDescription, error)
             }
+        } else {
+            resolve(nil)
         }
     }
 
+    // MARK: - Stop Live Activity
     @objc
     func stopLiveActivity(_ resolve: @escaping RCTPromiseResolveBlock,
                           rejecter reject: @escaping RCTPromiseRejectBlock) {
-        Task {
-            do {
-                guard #available(iOS 16.2, *) else {
-                    reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system", nil)
-                    return
-                }
-
-                guard let activity = Activity<DeliveryAttributes>.activities.first else {
-                    reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
-                    return
-                }
-
-                await activity.end(dismissalPolicy: .immediate)
-                resolve(nil)
-            } catch {
-                reject("STOP_LIVE_ACTIVITY_ERROR", error.localizedDescription, error)
+        if #available(iOS 16.1, *) {
+            let activities = Activity<DeliveryAttributes>.activities
+            guard let activity = activities.first else {
+                resolve(false)
+                return
             }
+
+            Task {
+                await activity.end(dismissalPolicy: .immediate)
+                resolve(true)
+            }
+        } else {
+            resolve(nil)
         }
     }
 
+    // MARK: - Check if Live Activity Exists
     @objc
     func isLiveActivityRunning(_ resolve: @escaping RCTPromiseResolveBlock,
                                rejecter reject: @escaping RCTPromiseRejectBlock) {
-        if #available(iOS 16.2, *) {
+        if #available(iOS 16.1, *) {
             resolve(!Activity<DeliveryAttributes>.activities.isEmpty)
         } else {
             resolve(false)
         }
     }
 
-    // MARK: - App Group Image Helpers
+    // MARK: - Parse Start Data (JSON)
+    private func parseStartData(_ raw: String) throws -> StartData {
+        guard let json = raw.data(using: .utf8) else {
+            throw ActivityControllerError.unexpected("Invalid raw string")
+        }
 
-    @objc
-    func saveImageToAppGroup(_ imageUrl: String,
-                             resolver resolve: @escaping RCTPromiseResolveBlock,
-                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        Task {
-            do {
-                guard let url = URL(string: imageUrl) else {
-                    throw GenericException("Invalid image URL")
-                }
-
-                let appGroupId = "group.com.enatega.customerapp"
-                guard let containerUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
-                    throw GenericException("Unable to access App Group container")
-                }
-
-                let imagesFolder = containerUrl.appendingPathComponent("WidgetImages", isDirectory: true)
-                try? FileManager.default.createDirectory(at: imagesFolder, withIntermediateDirectories: true)
-
-                let fileUrl = imagesFolder.appendingPathComponent(url.lastPathComponent)
-
-                if FileManager.default.fileExists(atPath: fileUrl.path) {
-                    resolve(fileUrl.path)
-                    return
-                }
-
-                let (data, response) = try await URLSession.shared.data(from: url)
-                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                    throw GenericException("Failed to download image")
-                }
-
-                try data.write(to: fileUrl, options: .atomic)
-                resolve(fileUrl.path)
-            } catch {
-                reject("SAVE_IMAGE_ERROR", error.localizedDescription, error)
-            }
+        do {
+            return try JSONDecoder().decode(StartData.self, from: json)
+        } catch {
+            throw ActivityControllerError.unexpected("Failed to parse start data")
         }
     }
 
-    @objc
-    func cleanAppGroupImages(_ maxAgeHours: Double,
-                             resolver resolve: @escaping RCTPromiseResolveBlock,
-                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        Task {
-            let appGroupId = "group.com.enatega.customerapp"
-            guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else { return }
-
-            let imagesFolder = containerURL.appendingPathComponent("WidgetImages", isDirectory: true)
-            guard FileManager.default.fileExists(atPath: imagesFolder.path) else { return }
-
-            let expirySeconds = maxAgeHours * 3600
-            let now = Date()
-            let fm = FileManager.default
-
-            guard let files = try? fm.contentsOfDirectory(at: imagesFolder, includingPropertiesForKeys: [.contentModificationDateKey], options: [.skipsHiddenFiles]) else { return }
-
-            for file in files {
-                if let attrs = try? fm.attributesOfItem(atPath: file.path),
-                   let modDate = attrs[.modificationDate] as? Date,
-                   now.timeIntervalSince(modDate) > expirySeconds {
-                    try? fm.removeItem(at: file)
-                }
-            }
-            resolve(nil)
+    // MARK: - Parse Update Data (JSON)
+    private func parseUpdateData(_ raw: String) throws -> UpdateData {
+        guard let json = raw.data(using: .utf8) else {
+            throw ActivityControllerError.unexpected("Invalid raw string")
         }
+
+        do {
+            return try JSONDecoder().decode(UpdateData.self, from: json)
+        } catch {
+            throw ActivityControllerError.unexpected("Failed to parse update data")
+        }
+    }
+
+    // MARK: - Codable Structures for JSON
+    private struct StartData: Codable {
+        let orderId: String
+        let itemName: String
+        let totalAmount: String
+        let vehicleNumber: String
+        let itemImageUrl: String
+        let orderStatus: String
+        let estimatedDelivery: String
+        let progress: Double
+    }
+
+    private struct UpdateData: Codable {
+        let orderStatus: String
+        let estimatedDelivery: String
+        let progress: Double
     }
 }
