@@ -1,5 +1,5 @@
 #import <React/RCTBridgeModule.h>
-#import "activity_controller-Swift.h" 
+#import <activity_controller/activity_controller-Swift.h>
 
 @interface RCT_EXTERN_MODULE(ActivityController, NSObject)
 

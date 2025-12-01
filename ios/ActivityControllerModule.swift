@@ -6,13 +6,17 @@ import OSLog
 class ActivityControllerModule: NSObject {
 
     // MARK: - Check if Live Activities are enabled
-    @objc
+     @objc
     func areLiveActivitiesEnabled(_ resolve: @escaping RCTPromiseResolveBlock,
                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
-        if ActivityAuthorizationInfo().areActivitiesEnabled {
-            resolve(true)
+        if #available(iOS 16.1, *) {
+            if ActivityAuthorizationInfo().areActivitiesEnabled {
+                resolve(true)
+            } else {
+                resolve(false)
+            }
         } else {
-            resolve(false)
+            // Fallback on earlier versions
         }
     }
 
