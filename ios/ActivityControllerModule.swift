@@ -3,31 +3,6 @@ import ActivityKit
 import OSLog
 import React
 
-// MARK: - Simple error type (replaces Expo's GenericException)
-enum ActivityControllerError: Error {
-  case unexpected(String)
-  var reason: String {
-    switch self {
-    case .unexpected(let msg): return msg
-    }
-  }
-}
-
-// MARK: - DeliveryAttributes (self-contained, include if you don't have Attributes.swift)
-struct DeliveryAttributes: ActivityAttributes {
-  public struct ContentState: Codable, Hashable {
-    var orderStatus: String
-    var estimatedDelivery: String
-    var progress: Double
-  }
-
-  // Attributes visible only to the app
-  var orderId: String
-  var itemName: String
-  var totalAmount: String
-  var vehicleNumber: String
-  var itemImageUrl: String
-}
 
 // MARK: - JSON param structs used by the module
 fileprivate struct StartParams: Decodable {
