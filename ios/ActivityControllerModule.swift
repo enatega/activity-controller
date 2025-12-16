@@ -220,8 +220,9 @@ class ActivityController: NSObject, RCTBridgeModule {
   // JS: ActivityController.saveImageToAppGroup(url)
   @objc
   func saveImageToAppGroup(_ imageUrl: String,
-                           resolver resolve: @escaping RCTPromiseResolveBlock,
-                           rejecter reject: @escaping RCTPromiseRejectBlock) {
+                          appGroupId: String,
+                          resolver resolve: @escaping RCTPromiseResolveBlock,
+                          rejecter reject: @escaping RCTPromiseRejectBlock) {
     Task {
       do {
         logger.log("saveImageToAppGroup start: \(imageUrl)")
@@ -230,7 +231,7 @@ class ActivityController: NSObject, RCTBridgeModule {
           throw ActivityControllerError.unexpected("Invalid image URL: \(imageUrl)")
         }
 
-        let appGroupId = "group.com.enatega.customerapp"
+        // let appGroupId = "group.com.enatega.customerapp"
         guard let containerUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
           throw ActivityControllerError.unexpected("Unable to access App Group container for ID: \(appGroupId)")
         }
@@ -273,11 +274,12 @@ class ActivityController: NSObject, RCTBridgeModule {
   // MARK: - cleanAppGroupImages
   @objc
   func cleanAppGroupImages(_ maxAgeHours: Double,
+                           appGroupId: String,
                            resolver resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
     Task {
       do {
-        let appGroupId = "group.com.enatega.customerapp"
+        // let appGroupId = "group.com.enatega.customerapp"
         guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
           logger.error("Unable to access App Group container.")
           resolve(nil)

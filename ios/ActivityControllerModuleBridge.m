@@ -21,10 +21,12 @@ RCT_EXTERN_METHOD(isLiveActivityRunning:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(saveImageToAppGroup:(NSString *)rawData
+                  appGroupId:(NSString *)appGroupId
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(cleanAppGroupImages:(double)maxAgeHours
+                  appGroupId:(NSString *)appGroupId
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
