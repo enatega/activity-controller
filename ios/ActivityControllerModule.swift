@@ -5,41 +5,93 @@ import React
 
 
 // MARK: - JSON param structs used by the module
-fileprivate struct StartParams: Decodable {
-  let orderStatus: String
-  let estimatedDelivery: String
-  let progress: Double
+fileprivate struct ActivityStateParams: Decodable {
+  let schemaVersion: Int
+  let status: String
+  let estimatedArrivalEpoch: Int64
+  let etaUpdatedAtEpoch: Int64
+  let riderName: String
+  let riderPhone: String
+  let language: String
+}
 
+fileprivate struct StartParams: Decodable {
   let orderId: String
-  let itemName: String
-  let totalAmount: String
-  let vehicleNumber: String
-  let itemImageUrl: String
+  let displayOrderId: String
+  let state: ActivityStateParams
 }
 
 fileprivate struct UpdateParams: Decodable {
-  let orderStatus: String
-  let estimatedDelivery: String
-  let progress: Double
+  let orderId: String
+  let terminal: Bool?
+  let state: ActivityStateParams
 }
 
 // MARK: - React Native Bridge
 @objc(ActivityController) // name exposed to JS: NativeModules.ActivityController
-class ActivityController: NSObject, RCTBridgeModule {
+class ActivityController: RCTEventEmitter {
 
   // Optional: explicit moduleName (some RN setups expect it)
   @objc
-  static func moduleName() -> String! {
+  override static func moduleName() -> String! {
     return "ActivityController"
   }
 
   // Tell RN whether module requires main queue. This module does not.
   @objc
-  static func requiresMainQueueSetup() -> Bool {
+  override static func requiresMainQueueSetup() -> Bool {
     return false
   }
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "ActivityController", category: "ActivityController")
+  private var hasEventListeners = false
+  private var tokenTasks: [String: Task<Void, Never>] = [:]
+
+  override func supportedEvents() -> [String]! {
+    ["LiveActivityTokenUpdated"]
+  }
+
+  override func startObserving() {
+    hasEventListeners = true
+  }
+
+  override func stopObserving() {
+    hasEventListeners = false
+  }
+
+  private func makeState(_ params: ActivityStateParams) -> DeliveryAttributes.ContentState {
+    DeliveryAttributes.ContentState(
+      schemaVersion: params.schemaVersion,
+      status: params.status.uppercased(),
+      estimatedArrivalEpoch: params.estimatedArrivalEpoch,
+      etaUpdatedAtEpoch: params.etaUpdatedAtEpoch,
+      riderName: params.riderName,
+      riderPhone: params.riderPhone,
+      language: ["en", "ar", "he"].contains(params.language) ? params.language : "en"
+    )
+  }
+
+  @available(iOS 16.2, *)
+  private func observePushTokens(for activity: Activity<DeliveryAttributes>) {
+    tokenTasks[activity.id]?.cancel()
+    tokenTasks[activity.id] = Task { [weak self] in
+      for await tokenData in activity.pushTokenUpdates {
+        guard !Task.isCancelled else { return }
+        let token = tokenData.map { String(format: "%02x", $0) }.joined()
+        guard let self, self.hasEventListeners else { continue }
+        await MainActor.run {
+          self.sendEvent(
+            withName: "LiveActivityTokenUpdated",
+            body: [
+              "activityId": activity.id,
+              "orderId": activity.attributes.orderId,
+              "pushToken": token,
+            ]
+          )
+        }
+      }
+    }
+  }
 
   // MARK: - areLiveActivitiesEnabled
   @objc
@@ -77,9 +129,13 @@ class ActivityController: NSObject, RCTBridgeModule {
           throw ActivityControllerError.unexpected("Failed to decode start params: \(error.localizedDescription)")
         }
 
-        // ensure no existing activity (per original logic)
+        // This product intentionally supports one active delivery at a time.
         if !Activity<DeliveryAttributes>.activities.isEmpty {
-          reject("ACTIVITY_ALREADY_RUNNING", "A live activity is already running", nil)
+          resolve([
+            "activityId": Activity<DeliveryAttributes>.activities.first?.id ?? "",
+            "pushToken": "",
+            "alreadyRunning": true,
+          ])
           return
         }
 
@@ -91,17 +147,9 @@ class ActivityController: NSObject, RCTBridgeModule {
 
         let attributes = DeliveryAttributes(
           orderId: params.orderId,
-          itemName: params.itemName,
-          totalAmount: params.totalAmount,
-          vehicleNumber: params.vehicleNumber,
-          itemImageUrl: params.itemImageUrl
+          displayOrderId: params.displayOrderId
         )
-
-        let contentState = DeliveryAttributes.ContentState(
-          orderStatus: params.orderStatus,
-          estimatedDelivery: params.estimatedDelivery,
-          progress: params.progress
-        )
+        let contentState = makeState(params.state)
 
         // request activity with push token
         let activity = try Activity<DeliveryAttributes>.request(
@@ -110,12 +158,8 @@ class ActivityController: NSObject, RCTBridgeModule {
           pushType: .token
         )
 
-        // wait for first push token (same approach as original)
-        var tokenString = ""
-        for await tokenData in activity.pushTokenUpdates {
-          tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
-          break
-        }
+        observePushTokens(for: activity)
+        let tokenString = activity.pushToken?.map { String(format: "%02x", $0) }.joined() ?? ""
 
         let result: [String: Any] = [
           "activityId": activity.id,
@@ -146,11 +190,6 @@ class ActivityController: NSObject, RCTBridgeModule {
           return
         }
 
-        guard let activity = Activity<DeliveryAttributes>.activities.first else {
-          reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
-          return
-        }
-
         guard let jsonData = rawData.data(using: .utf8) else {
           throw ActivityControllerError.unexpected("Invalid rawData string")
         }
@@ -162,13 +201,24 @@ class ActivityController: NSObject, RCTBridgeModule {
           throw ActivityControllerError.unexpected("Failed to decode update params: \(error.localizedDescription)")
         }
 
-        let updatedState = DeliveryAttributes.ContentState(
-          orderStatus: params.orderStatus,
-          estimatedDelivery: params.estimatedDelivery,
-          progress: params.progress
-        )
+        guard let activity = Activity<DeliveryAttributes>.activities.first(where: {
+          $0.attributes.orderId == params.orderId
+        }) else {
+          reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
+          return
+        }
 
-        await activity.update(using: updatedState)
+        let updatedState = makeState(params.state)
+        if params.terminal == true {
+          await activity.end(
+            using: updatedState,
+            dismissalPolicy: .after(Date().addingTimeInterval(30 * 60))
+          )
+          tokenTasks[activity.id]?.cancel()
+          tokenTasks.removeValue(forKey: activity.id)
+        } else {
+          await activity.update(using: updatedState)
+        }
         resolve(nil)
       } catch let err as ActivityControllerError {
         logger.error("updateLiveActivity error: \(err.reason)")
@@ -185,23 +235,20 @@ class ActivityController: NSObject, RCTBridgeModule {
   func stopLiveActivity(_ resolve: @escaping RCTPromiseResolveBlock,
                         rejecter reject: @escaping RCTPromiseRejectBlock) {
     Task {
-      do {
-        guard #available(iOS 16.2, *) else {
-          reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system.", nil)
-          return
-        }
-
-        guard let activity = Activity<DeliveryAttributes>.activities.first else {
-          reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
-          return
-        }
-
-        await activity.end(dismissalPolicy: .immediate)
-        resolve(nil)
-      } catch {
-        logger.error("stopLiveActivity unexpected: \(error.localizedDescription)")
-        reject("STOP_LIVE_ACTIVITY_ERROR", error.localizedDescription, error)
+      guard #available(iOS 16.2, *) else {
+        reject("ACTIVITY_UNAVAILABLE", "Live activities are not available on this system.", nil)
+        return
       }
+
+      guard let activity = Activity<DeliveryAttributes>.activities.first else {
+        reject("ACTIVITY_NOT_FOUND", "No live activity is running", nil)
+        return
+      }
+
+      await activity.end(dismissalPolicy: .immediate)
+      tokenTasks[activity.id]?.cancel()
+      tokenTasks.removeValue(forKey: activity.id)
+      resolve(nil)
     }
   }
 
@@ -278,7 +325,6 @@ class ActivityController: NSObject, RCTBridgeModule {
                            resolver resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
     Task {
-      do {
         // let appGroupId = "group.com.enatega.customerapp"
         guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
           logger.error("Unable to access App Group container.")
@@ -325,10 +371,6 @@ class ActivityController: NSObject, RCTBridgeModule {
 
         logger.log("Image cleanup complete.")
         resolve(nil)
-      } catch {
-        logger.error("cleanAppGroupImages unexpected: \(error.localizedDescription)")
-        reject("CLEAN_IMAGES_ERROR", error.localizedDescription, error)
-      }
     }
   }
 }

@@ -1,99 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root_card"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/compactRoot"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-
-
-    android:layout_margin="8dp">
-
-    <!-- Left item image -->
-    <ImageView
-        android:id="@+id/ivItemImage"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_placeholder_image"
-        android:contentDescription="Item image"
-        android:layout_alignParentStart="true"
-        android:layout_marginEnd="12dp"
-        />
-
-    <!-- Title and total -->
-    <LinearLayout
-        android:id="@+id/text_group"
-        android:layout_toEndOf="@id/ivItemImage"
-        android:layout_alignTop="@id/ivItemImage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/tvItemName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Item name"
-            android:textSize="18sp"
-            android:textColor="#000000"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/tvTotalAmount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Total: $0"
-            android:textSize="14sp"
-            android:textColor="#666666"
-            android:maxLines="1"
-            android:ellipsize="end" />
-    </LinearLayout>
-
-    <!-- Progress bar area -->
-    <ImageView
-        android:id="@+id/ivDriver"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/moped"
-        android:contentDescription="Driver"
-        android:layout_alignBottom="@id/progressBar"
-        android:translationY="-10dp"
-        android:layout_marginStart="4dp"
-        />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/ivItemImage"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="8dp"
-        android:max="100"
-        android:progress="0"
-        android:progressDrawable="@drawable/progress_bar_custom"
-        android:indeterminate="false"
-
-        />
-
-    <!-- Status and order id on the same row -->
-    <TextView
-        android:id="@+id/tvOrderStatus"
-        android:layout_below="@id/progressBar"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="2dp"
-        android:text="Pending"
-        android:textSize="16sp"
-        android:textColor="#333333"  android:layout_height="wrap_content" android:layout_width="wrap_content"/>
-
-    <TextView
-        android:id="@+id/tvOrderId"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/progressBar"
-        android:layout_marginTop="2dp"
-        android:text="Order ID: -"
-        android:textSize="14sp"
-        android:textColor="#333333" android:layout_height="wrap_content" android:layout_width="wrap_content"/>
-</RelativeLayout>
+    android:layout_height="64dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="12dp"
+    android:background="@drawable/bg_notification">
+    <ImageView android:layout_width="86dp" android:layout_height="38dp" android:contentDescription="Yalla" android:scaleType="centerCrop" android:src="@drawable/yalla_logo" />
+    <TextView android:id="@+id/tvHeadline" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:ellipsize="end" android:maxLines="1" android:paddingStart="8dp" android:text="Almost here!" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+    <TextView android:id="@+id/tvEta" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_eta" android:gravity="center" android:minWidth="54dp" android:paddingHorizontal="8dp" android:paddingVertical="7dp" android:text="8 min" android:textColor="#FFCA0D" android:textSize="14sp" android:textStyle="bold" />
+</LinearLayout>

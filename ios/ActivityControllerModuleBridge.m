@@ -1,7 +1,8 @@
 #import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 #import <activity_controller/activity_controller-Swift.h>
 
-@interface RCT_EXTERN_MODULE(ActivityController, NSObject)
+@interface RCT_EXTERN_MODULE(ActivityController, RCTEventEmitter)
 
 RCT_EXTERN_METHOD(areLiveActivitiesEnabled:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)

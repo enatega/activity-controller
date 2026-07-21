@@ -46,4 +46,24 @@ class ActivityControllerModule(reactContext: ReactApplicationContext) : ReactCon
             promise.reject("STOP_ERROR", e)
         }
     }
+
+    @ReactMethod
+    fun isLiveActivityRunning(promise: Promise) {
+        promise.resolve(helper.isRunning())
+    }
+
+    @ReactMethod
+    fun areLiveActivitiesEnabled(promise: Promise) {
+        promise.resolve(true)
+    }
+
+    @ReactMethod
+    fun saveImageToAppGroup(imageUrl: String, appGroupId: String, promise: Promise) {
+        promise.resolve(imageUrl)
+    }
+
+    @ReactMethod
+    fun cleanAppGroupImages(maxAgeHours: Double, appGroupId: String, promise: Promise) {
+        promise.resolve(null)
+    }
 }

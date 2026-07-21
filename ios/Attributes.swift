@@ -1,22 +1,34 @@
 import ActivityKit
 
 public struct DeliveryAttributes: ActivityAttributes {
-    
-    public struct ContentState: Codable, Hashable {
-        public var orderStatus: String
-        public var estimatedDelivery: String
-        public var progress: Double  
-        
-        public init(orderStatus: String, estimatedDelivery: String, progress: Double) {
-            self.orderStatus = orderStatus
-            self.estimatedDelivery = estimatedDelivery
-            self.progress = progress
-        }
-    }
+  public struct ContentState: Codable, Hashable {
+    public var schemaVersion: Int
+    public var status: String
+    public var estimatedArrivalEpoch: Int64
+    public var etaUpdatedAtEpoch: Int64
+    public var riderName: String
+    public var riderPhone: String
+    public var language: String
 
-    public let orderId: String
-    public let itemName: String
-    public let totalAmount: String
-    public let vehicleNumber: String
-    public let itemImageUrl: String
+    public init(
+      schemaVersion: Int,
+      status: String,
+      estimatedArrivalEpoch: Int64,
+      etaUpdatedAtEpoch: Int64,
+      riderName: String,
+      riderPhone: String,
+      language: String
+    ) {
+      self.schemaVersion = schemaVersion
+      self.status = status
+      self.estimatedArrivalEpoch = estimatedArrivalEpoch
+      self.etaUpdatedAtEpoch = etaUpdatedAtEpoch
+      self.riderName = riderName
+      self.riderPhone = riderPhone
+      self.language = language
+    }
+  }
+
+  public let orderId: String
+  public let displayOrderId: String
 }
