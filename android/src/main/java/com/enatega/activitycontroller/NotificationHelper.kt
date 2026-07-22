@@ -6,7 +6,11 @@ import android.app.PendingIntent
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
@@ -102,8 +106,11 @@ class NotificationHelper private constructor(private val context: Context) {
         val riderName = state.optString("riderName")
         val riderPhone = state.optString("riderPhone")
         val arrivalEpoch = state.optLong("estimatedArrivalEpoch", 0L)
+        val etaUpdatedAtEpoch = state.optLong("etaUpdatedAtEpoch", 0L)
         val terminal = payload.optBoolean("terminal", status in listOf("DELIVERED", "COMPLETED", "CANCELLED", "CANCELLEDBYREST"))
         val cancelled = status.contains("CANCEL")
+        val showEta = status == "PICKED" && riderName.isNotBlank() && arrivalEpoch > 0L && !terminal
+        val etaIsActive = arrivalEpoch * 1000L > System.currentTimeMillis()
 
         val compact = RemoteViews(context.packageName, R.layout.notification_live_activity)
         val expanded = RemoteViews(context.packageName, R.layout.notification_live_activity_big)
@@ -117,12 +124,21 @@ class NotificationHelper private constructor(private val context: Context) {
 
         compact.setTextViewText(R.id.tvHeadline, headline)
         compact.setTextColor(R.id.tvHeadline, if (cancelled) Color.rgb(235, 87, 87) else Color.WHITE)
+        compact.setTextViewText(R.id.tvOrderIdCompact, "#$displayOrderId")
+        compact.setViewVisibility(R.id.etaGroupCompact, if (showEta) View.VISIBLE else View.GONE)
+        compact.setViewVisibility(R.id.tvOrderIdCompact, if (showEta) View.GONE else View.VISIBLE)
         compact.setTextViewText(R.id.tvEta, eta)
-        expanded.setTextViewText(R.id.tvHeadlineBig, headline)
-        expanded.setTextColor(R.id.tvHeadlineBig, if (cancelled) Color.rgb(235, 87, 87) else Color.WHITE)
+        expanded.setTextViewText(R.id.tvStatusBig, headline)
+        expanded.setTextColor(R.id.tvStatusBig, if (cancelled) Color.rgb(235, 87, 87) else Color.rgb(180, 181, 184))
+        expanded.setViewVisibility(R.id.etaGroupBig, if (showEta) View.VISIBLE else View.GONE)
+        expanded.setViewVisibility(R.id.tvOrderIdBig, if (showEta) View.GONE else View.VISIBLE)
         expanded.setTextViewText(R.id.tvEtaBig, eta)
         expanded.setTextViewText(R.id.tvOrderIdBig, "#$displayOrderId")
-        expanded.setTextViewText(R.id.tvArrivalBig, if (arrivalEpoch > 0 && !terminal) "${copy.arrivingAt} ${absoluteTime(arrivalEpoch)}" else "")
+        if (showEta) {
+            val ring = etaRing(arrivalEpoch, etaUpdatedAtEpoch)
+            compact.setImageViewBitmap(R.id.etaRingCompact, ring)
+            expanded.setImageViewBitmap(R.id.etaRingBig, ring)
+        }
 
         bindStages(expanded, status, copy, cancelled)
         val showRider = riderName.isNotBlank() && stageIndex(status) >= 2
@@ -166,7 +182,7 @@ class NotificationHelper private constructor(private val context: Context) {
             currentOrderId = null
             currentPayload = null
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
-        } else if (arrivalEpoch * 1000L > System.currentTimeMillis()) {
+        } else if (showEta && etaIsActive) {
             scheduleRefresh()
         } else {
             cancelRefresh()
@@ -175,18 +191,27 @@ class NotificationHelper private constructor(private val context: Context) {
 
     private fun bindStages(view: RemoteViews, status: String, copy: Copy, cancelled: Boolean) {
         val dotIds = intArrayOf(R.id.stagePendingDot, R.id.stageAcceptedDot, R.id.stageAssignedDot, R.id.stagePickedDot, R.id.stageDeliveredDot)
+        val iconIds = intArrayOf(R.id.stagePendingIcon, R.id.stageAcceptedIcon, R.id.stageAssignedIcon, R.id.stagePickedIcon, R.id.stageDeliveredIcon)
         val labelIds = intArrayOf(R.id.stagePendingLabel, R.id.stageAcceptedLabel, R.id.stageAssignedLabel, R.id.stagePickedLabel, R.id.stageDeliveredLabel)
+        val railIds = intArrayOf(R.id.stageRail1, R.id.stageRail2, R.id.stageRail3, R.id.stageRail4)
         val current = stageIndex(status)
         for (index in dotIds.indices) {
+            val completed = !cancelled && (current == 4 || index < current)
             val color = when {
                 cancelled -> Color.rgb(105, 107, 112)
-                current == 4 || index < current -> Color.rgb(170, 200, 16)
+                completed -> Color.rgb(170, 200, 16)
                 index == current -> Color.rgb(255, 202, 13)
                 else -> Color.rgb(105, 107, 112)
             }
+            view.setImageViewResource(dotIds[index], if (completed) R.drawable.stage_circle_filled else R.drawable.stage_circle_outline)
             view.setInt(dotIds[index], "setColorFilter", color)
+            view.setInt(iconIds[index], "setColorFilter", if (completed) Color.BLACK else color)
             view.setTextViewText(labelIds[index], copy.stage(index))
-            view.setTextColor(labelIds[index], color)
+            view.setTextColor(labelIds[index], if (!cancelled && index <= current) Color.WHITE else Color.rgb(105, 107, 112))
+        }
+        for (index in railIds.indices) {
+            val color = if (!cancelled && index < current) Color.rgb(170, 200, 16) else Color.rgb(105, 107, 112)
+            view.setInt(railIds[index], "setBackgroundColor", color)
         }
     }
 
@@ -208,8 +233,28 @@ class NotificationHelper private constructor(private val context: Context) {
         }
     }
 
-    private fun absoluteTime(epoch: Long): String =
-        java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date(epoch * 1000L))
+    private fun etaRing(arrivalEpoch: Long, updatedAtEpoch: Long): Bitmap {
+        val size = 72
+        val stroke = 9f
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = stroke
+            strokeCap = Paint.Cap.ROUND
+        }
+        val bounds = RectF(stroke, stroke, size - stroke, size - stroke)
+        paint.color = Color.rgb(55, 56, 59)
+        canvas.drawArc(bounds, -90f, 360f, false, paint)
+
+        val now = System.currentTimeMillis() / 1000L
+        val start = updatedAtEpoch.takeIf { it in 1 until arrivalEpoch } ?: (arrivalEpoch - 30 * 60L)
+        val duration = (arrivalEpoch - start).coerceAtLeast(1L)
+        val remaining = ((arrivalEpoch - now).coerceIn(0L, duration)).toFloat() / duration.toFloat()
+        paint.color = Color.rgb(255, 202, 13)
+        canvas.drawArc(bounds, -90f, 360f * remaining, false, paint)
+        return bitmap
+    }
 
     private fun deepLinkIntent(url: String, requestCode: Int = 0): PendingIntent {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {

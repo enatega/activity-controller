@@ -3,11 +3,64 @@
     android:id="@+id/compactRoot"
     android:layout_width="match_parent"
     android:layout_height="64dp"
+    android:background="@drawable/bg_notification"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="12dp"
-    android:background="@drawable/bg_notification">
-    <ImageView android:layout_width="86dp" android:layout_height="38dp" android:contentDescription="Yalla" android:scaleType="centerCrop" android:src="@drawable/yalla_logo" />
-    <TextView android:id="@+id/tvHeadline" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:ellipsize="end" android:maxLines="1" android:paddingStart="8dp" android:text="Almost here!" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
-    <TextView android:id="@+id/tvEta" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_eta" android:gravity="center" android:minWidth="54dp" android:paddingHorizontal="8dp" android:paddingVertical="7dp" android:text="8 min" android:textColor="#FFCA0D" android:textSize="14sp" android:textStyle="bold" />
+    android:paddingHorizontal="12dp">
+
+    <ImageView
+        android:layout_width="72dp"
+        android:layout_height="29dp"
+        android:contentDescription="Yalla"
+        android:scaleType="fitStart"
+        android:src="@drawable/yalla_logo" />
+
+    <TextView
+        android:id="@+id/tvHeadline"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingStart="10dp"
+        android:text="Almost here!"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvOrderIdCompact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#B4B5B8"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/etaGroupCompact"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvEta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="8 min"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/etaRingCompact"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:contentDescription="Delivery progress" />
+    </LinearLayout>
 </LinearLayout>

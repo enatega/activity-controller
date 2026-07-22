@@ -1,29 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/expandedRoot" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_notification" android:orientation="vertical" android:padding="12dp">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="40dp" android:gravity="center_vertical" android:orientation="horizontal">
-        <ImageView android:layout_width="96dp" android:layout_height="40dp" android:contentDescription="Yalla" android:scaleType="centerCrop" android:src="@drawable/yalla_logo" />
-        <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
-        <TextView android:id="@+id/tvEtaBig" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_eta" android:paddingHorizontal="10dp" android:paddingVertical="6dp" android:text="8 min" android:textColor="#FFCA0D" android:textSize="15sp" android:textStyle="bold" />
-    </LinearLayout>
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:gravity="bottom" android:orientation="horizontal">
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-            <TextView android:id="@+id/tvHeadlineBig" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:maxLines="1" android:text="Almost here!" android:textColor="#FFFFFF" android:textSize="21sp" android:textStyle="bold" />
-            <TextView android:id="@+id/tvArrivalBig" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Arriving at 9:51 AM" android:textColor="#8F9094" android:textSize="12sp" />
+    android:id="@+id/expandedRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_notification"
+    android:orientation="vertical"
+    android:paddingHorizontal="12dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="76dp"
+            android:layout_height="30dp"
+            android:contentDescription="Yalla"
+            android:scaleType="fitStart"
+            android:src="@drawable/yalla_logo" />
+
+        <TextView
+            android:id="@+id/tvStatusBig"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingStart="9dp"
+            android:textColor="#B4B5B8"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvOrderIdBig"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="#1234"
+            android:textColor="#B4B5B8"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/etaGroupBig"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvEtaBig"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="8 min"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/etaRingBig"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="6dp"
+                android:contentDescription="Delivery progress" />
         </LinearLayout>
-        <TextView android:id="@+id/tvOrderIdBig" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="#1234" android:textColor="#8F9094" android:textSize="10sp" />
     </LinearLayout>
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:baselineAligned="false" android:orientation="horizontal">
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical"><ImageView android:id="@+id/stagePendingDot" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/stage_dot"/><TextView android:id="@+id/stagePendingLabel" style="@style/YallaStageLabel" /></LinearLayout>
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical"><ImageView android:id="@+id/stageAcceptedDot" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/stage_dot"/><TextView android:id="@+id/stageAcceptedLabel" style="@style/YallaStageLabel" /></LinearLayout>
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical"><ImageView android:id="@+id/stageAssignedDot" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/stage_dot"/><TextView android:id="@+id/stageAssignedLabel" style="@style/YallaStageLabel" /></LinearLayout>
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical"><ImageView android:id="@+id/stagePickedDot" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/stage_dot"/><TextView android:id="@+id/stagePickedLabel" style="@style/YallaStageLabel" /></LinearLayout>
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical"><ImageView android:id="@+id/stageDeliveredDot" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/stage_dot"/><TextView android:id="@+id/stageDeliveredLabel" style="@style/YallaStageLabel" /></LinearLayout>
-    </LinearLayout>
-    <LinearLayout android:id="@+id/riderPanel" android:layout_width="match_parent" android:layout_height="58dp" android:layout_marginTop="10dp" android:background="@drawable/bg_rider_panel" android:gravity="center_vertical" android:orientation="horizontal" android:padding="6dp" android:visibility="gone">
-        <ImageView android:layout_width="46dp" android:layout_height="46dp" android:contentDescription="Rider" android:scaleType="centerCrop" android:src="@drawable/yalla_rider" />
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:paddingStart="8dp"><TextView android:id="@+id/tvRiderName" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:maxLines="1" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" /><TextView android:id="@+id/tvRiderSubtitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#8F9094" android:textSize="11sp" /></LinearLayout>
-        <ImageView android:id="@+id/btnChat" android:layout_width="38dp" android:layout_height="38dp" android:background="@drawable/bg_action" android:contentDescription="Chat" android:padding="10dp" android:src="@drawable/ic_chat" />
-        <ImageView android:id="@+id/btnCall" android:layout_width="38dp" android:layout_height="38dp" android:layout_marginStart="6dp" android:background="@drawable/bg_action" android:contentDescription="Call" android:padding="10dp" android:src="@drawable/ic_phone" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_gravity="top"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.5" />
+            <TextView android:id="@+id/stageRail1" android:layout_width="0dp" android:layout_height="3dp" android:layout_weight="1" android:background="#6B6D70" />
+            <TextView android:id="@+id/stageRail2" android:layout_width="0dp" android:layout_height="3dp" android:layout_weight="1" android:background="#6B6D70" />
+            <TextView android:id="@+id/stageRail3" android:layout_width="0dp" android:layout_height="3dp" android:layout_weight="1" android:background="#6B6D70" />
+            <TextView android:id="@+id/stageRail4" android:layout_width="0dp" android:layout_height="3dp" android:layout_weight="1" android:background="#6B6D70" />
+            <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.5" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <LinearLayout style="@style/YallaStage" >
+                <FrameLayout style="@style/YallaStageCircleFrame">
+                    <ImageView android:id="@+id/stagePendingDot" style="@style/YallaStageDot" />
+                    <ImageView android:id="@+id/stagePendingIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_pending" />
+                </FrameLayout>
+                <TextView android:id="@+id/stagePendingLabel" style="@style/YallaStageLabel" />
+            </LinearLayout>
+            <LinearLayout style="@style/YallaStage" >
+                <FrameLayout style="@style/YallaStageCircleFrame">
+                    <ImageView android:id="@+id/stageAcceptedDot" style="@style/YallaStageDot" />
+                    <ImageView android:id="@+id/stageAcceptedIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_accepted" />
+                </FrameLayout>
+                <TextView android:id="@+id/stageAcceptedLabel" style="@style/YallaStageLabel" />
+            </LinearLayout>
+            <LinearLayout style="@style/YallaStage" >
+                <FrameLayout style="@style/YallaStageCircleFrame">
+                    <ImageView android:id="@+id/stageAssignedDot" style="@style/YallaStageDot" />
+                    <ImageView android:id="@+id/stageAssignedIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_assigned" />
+                </FrameLayout>
+                <TextView android:id="@+id/stageAssignedLabel" style="@style/YallaStageLabel" />
+            </LinearLayout>
+            <LinearLayout style="@style/YallaStage" >
+                <FrameLayout style="@style/YallaStageCircleFrame">
+                    <ImageView android:id="@+id/stagePickedDot" style="@style/YallaStageDot" />
+                    <ImageView android:id="@+id/stagePickedIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_picked" />
+                </FrameLayout>
+                <TextView android:id="@+id/stagePickedLabel" style="@style/YallaStageLabel" />
+            </LinearLayout>
+            <LinearLayout style="@style/YallaStage" >
+                <FrameLayout style="@style/YallaStageCircleFrame">
+                    <ImageView android:id="@+id/stageDeliveredDot" style="@style/YallaStageDot" />
+                    <ImageView android:id="@+id/stageDeliveredIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_delivered" />
+                </FrameLayout>
+                <TextView android:id="@+id/stageDeliveredLabel" style="@style/YallaStageLabel" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/riderPanel"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_rider_panel"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingHorizontal="7dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="55dp"
+            android:contentDescription="Rider"
+            android:scaleType="fitCenter"
+            android:src="@drawable/yalla_rider" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingStart="8dp">
+
+            <TextView
+                android:id="@+id/tvRiderName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvRiderSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:textColor="#8F9094"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btnChat"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/bg_action"
+            android:contentDescription="Chat"
+            android:padding="10dp"
+            android:src="@drawable/ic_chat" />
+
+        <ImageView
+            android:id="@+id/btnCall"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_action"
+            android:contentDescription="Call"
+            android:padding="10dp"
+            android:src="@drawable/ic_phone" />
     </LinearLayout>
 </LinearLayout>

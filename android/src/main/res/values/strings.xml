@@ -10,4 +10,25 @@
         <item name="android:textColor">#8F9094</item>
         <item name="android:textSize">8sp</item>
     </style>
+    <style name="YallaStage">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+    <style name="YallaStageCircleFrame">
+        <item name="android:layout_width">26dp</item>
+        <item name="android:layout_height">26dp</item>
+    </style>
+    <style name="YallaStageDot">
+        <item name="android:layout_width">26dp</item>
+        <item name="android:layout_height">26dp</item>
+        <item name="android:src">@drawable/stage_circle_outline</item>
+    </style>
+    <style name="YallaStageIcon">
+        <item name="android:layout_width">26dp</item>
+        <item name="android:layout_height">26dp</item>
+        <item name="android:padding">7dp</item>
+    </style>
 </resources>
