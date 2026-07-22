@@ -2,6 +2,7 @@ package com.enatega.activitycontroller
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.AlarmManager
 import android.content.Context
@@ -84,6 +85,7 @@ class NotificationHelper private constructor(private val context: Context) {
     }
 
     fun stop() {
+        YallaLiveActivityService.stop(context)
         currentOrderId?.let { notificationManager().cancel(it.hashCode()) }
         cancelRefresh()
         currentOrderId = null
@@ -187,8 +189,22 @@ class NotificationHelper private constructor(private val context: Context) {
             .apply { if (terminal) setTimeoutAfter(TERMINAL_TIMEOUT_MS) }
             .build()
 
+        if (!terminal) {
+            notification.flags = notification.flags or Notification.FLAG_ONGOING_EVENT or Notification.FLAG_NO_CLEAR
+        }
+
         try {
+            if (terminal) {
+                YallaLiveActivityService.stop(context)
+            }
             notificationManager().notify(notificationId, notification)
+            if (!terminal) {
+                runCatching {
+                    YallaLiveActivityService.start(context, notificationId, notification)
+                }.onFailure { error ->
+                    Log.e(TAG, "foreground service could not start; ongoing notification remains posted", error)
+                }
+            }
             Log.i(TAG, "notify completed order=$orderId id=$notificationId activeAfterNotify=${isNotificationActive(orderId)}")
         } catch (error: Exception) {
             Log.e(TAG, "notify failed order=$orderId id=$notificationId", error)

@@ -3,7 +3,6 @@
     android:id="@+id/compactRoot"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    android:background="@drawable/bg_notification"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingHorizontal="12dp">
