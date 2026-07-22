@@ -14,14 +14,17 @@ import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import org.json.JSONObject
 import kotlin.math.ceil
 
 class NotificationHelper private constructor(private val context: Context) {
     companion object {
+        private const val TAG = "YallaLiveActivity"
         private const val CHANNEL_ID = "yalla_delivery_activity_v2"
         private const val PREFS = "yalla_delivery_activity"
         private const val TERMINAL_TIMEOUT_MS = 30 * 60 * 1000L
@@ -41,28 +44,29 @@ class NotificationHelper private constructor(private val context: Context) {
     init {
         createChannel()
         restoreState()
+        Log.i(TAG, "helper initialized sdk=${Build.VERSION.SDK_INT} restoredOrder=$currentOrderId notificationsEnabled=${notificationsEnabled()} channelImportance=${channelImportance()}")
     }
 
     fun start(rawPayload: String): String {
         val payload = JSONObject(rawPayload)
         val orderId = payload.getString("orderId")
+        Log.i(TAG, "start requested order=$orderId currentOrder=$currentOrderId payloadBytes=${rawPayload.toByteArray().size}")
         if (currentOrderId != null && currentOrderId != orderId) {
-            return JSONObject()
-                .put("activityId", "android:$currentOrderId")
-                .put("pushToken", "")
-                .put("alreadyRunning", true)
-                .toString()
+            val existingOrderId = currentOrderId!!
+            if (isNotificationActive(existingOrderId)) {
+                Log.w(TAG, "start skipped because active notification exists for order=$existingOrderId")
+                return debugResult(existingOrderId, alreadyRunning = true).toString()
+            }
+
+            Log.w(TAG, "clearing stale session for order=$existingOrderId because no active notification exists")
+            clearPersistedState()
         }
 
         currentOrderId = orderId
         currentPayload = payload
         persistState()
         showNotification(payload)
-        return JSONObject()
-            .put("activityId", "android:$orderId")
-            .put("pushToken", "")
-            .put("alreadyRunning", false)
-            .toString()
+        return debugResult(orderId, alreadyRunning = false).toString()
     }
 
     fun update(rawPayload: String) {
@@ -111,6 +115,13 @@ class NotificationHelper private constructor(private val context: Context) {
         val cancelled = status.contains("CANCEL")
         val showEta = status == "PICKED" && riderName.isNotBlank() && arrivalEpoch > 0L && !terminal
         val etaIsActive = arrivalEpoch * 1000L > System.currentTimeMillis()
+        val notificationId = orderId.hashCode()
+
+        Log.i(
+            TAG,
+            "building notification order=$orderId id=$notificationId status=$status terminal=$terminal " +
+                "notificationsEnabled=${notificationsEnabled()} channelImportance=${channelImportance()}"
+        )
 
         val compact = RemoteViews(context.packageName, R.layout.notification_live_activity)
         val expanded = RemoteViews(context.packageName, R.layout.notification_live_activity_big)
@@ -176,7 +187,13 @@ class NotificationHelper private constructor(private val context: Context) {
             .apply { if (terminal) setTimeoutAfter(TERMINAL_TIMEOUT_MS) }
             .build()
 
-        notificationManager().notify(orderId.hashCode(), notification)
+        try {
+            notificationManager().notify(notificationId, notification)
+            Log.i(TAG, "notify completed order=$orderId id=$notificationId activeAfterNotify=${isNotificationActive(orderId)}")
+        } catch (error: Exception) {
+            Log.e(TAG, "notify failed order=$orderId id=$notificationId", error)
+            throw error
+        }
         if (terminal) {
             cancelRefresh()
             currentOrderId = null
@@ -308,7 +325,40 @@ class NotificationHelper private constructor(private val context: Context) {
                 setShowBadge(false)
             }
             notificationManager().createNotificationChannel(channel)
+            Log.i(TAG, "notification channel ready id=$CHANNEL_ID importance=${channelImportance()}")
         }
+    }
+
+    private fun notificationsEnabled(): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+    private fun channelImportance(): Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        notificationManager().getNotificationChannel(CHANNEL_ID)?.importance ?: -1
+    } else {
+        NotificationManager.IMPORTANCE_DEFAULT
+    }
+
+    private fun isNotificationActive(orderId: String): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        return runCatching {
+            notificationManager().activeNotifications.any { it.id == orderId.hashCode() }
+        }.onFailure { error ->
+            Log.e(TAG, "failed to query active notifications for order=$orderId", error)
+        }.getOrDefault(false)
+    }
+
+    private fun debugResult(orderId: String, alreadyRunning: Boolean): JSONObject = JSONObject()
+        .put("activityId", "android:$orderId")
+        .put("pushToken", "")
+        .put("alreadyRunning", alreadyRunning)
+        .put("notificationPosted", isNotificationActive(orderId))
+        .put("notificationsEnabled", notificationsEnabled())
+        .put("channelImportance", channelImportance())
+        .put("sdkInt", Build.VERSION.SDK_INT)
+
+    private fun clearPersistedState() {
+        currentOrderId = null
+        currentPayload = null
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
     }
 
     private fun notificationManager() = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
