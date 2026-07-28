@@ -15,14 +15,14 @@ class ActivityControllerModule(reactContext: ReactApplicationContext) : ReactCon
 
     @ReactMethod
     fun startLiveActivity(params: String, promise: Promise) {
-        Log.i("YallaLiveActivity", "React Native startLiveActivity invoked payloadBytes=${params.toByteArray().size}")
+        Log.i("DeliveryActivity", "React Native startLiveActivity invoked payloadBytes=${params.toByteArray().size}")
 
         try {
             val result = helper.start(params)
-            Log.i("YallaLiveActivity", "React Native startLiveActivity result=$result")
+            Log.i("DeliveryActivity", "React Native startLiveActivity result=$result")
             promise.resolve(result)
         } catch (e: Exception) {
-            Log.e("YallaLiveActivity", "React Native startLiveActivity error", e)
+            Log.e("DeliveryActivity", "React Native startLiveActivity error", e)
             promise.reject("START_ERROR", e)
         }
     }

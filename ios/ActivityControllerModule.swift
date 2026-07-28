@@ -44,7 +44,11 @@ class ActivityController: RCTEventEmitter {
   }
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "ActivityController", category: "ActivityController")
+  private let tokenEventQueue = DispatchQueue(
+    label: "com.enatega.activitycontroller.token-events"
+  )
   private var hasEventListeners = false
+  private var pendingTokenEvents: [[String: String]] = []
   private var tokenTasks: [String: Task<Void, Never>] = [:]
 
   override func supportedEvents() -> [String]! {
@@ -52,11 +56,28 @@ class ActivityController: RCTEventEmitter {
   }
 
   override func startObserving() {
-    hasEventListeners = true
+    let queuedEvents = tokenEventQueue.sync {
+      hasEventListeners = true
+      let events = pendingTokenEvents
+      pendingTokenEvents.removeAll()
+      return events
+    }
+    logger.log("Live Activity token listener started; queuedEvents=\(queuedEvents.count)")
+    queuedEvents.forEach { event in
+      sendEvent(withName: "LiveActivityTokenUpdated", body: event)
+    }
   }
 
   override func stopObserving() {
-    hasEventListeners = false
+    tokenEventQueue.sync {
+      hasEventListeners = false
+    }
+    logger.log("Live Activity token listener stopped")
+  }
+
+  private func tokenFingerprint(_ token: String) -> String {
+    guard token.count > 12 else { return "length=\(token.count)" }
+    return "\(token.prefix(6))…\(token.suffix(6)) length=\(token.count)"
   }
 
   private func makeState(_ params: ActivityStateParams) -> DeliveryAttributes.ContentState {
@@ -74,22 +95,49 @@ class ActivityController: RCTEventEmitter {
   @available(iOS 16.2, *)
   private func observePushTokens(for activity: Activity<DeliveryAttributes>) {
     tokenTasks[activity.id]?.cancel()
+    logger.log(
+      "Starting push-token observation activity=\(activity.id, privacy: .public) order=\(activity.attributes.orderId, privacy: .public)"
+    )
     tokenTasks[activity.id] = Task { [weak self] in
       for await tokenData in activity.pushTokenUpdates {
         guard !Task.isCancelled else { return }
         let token = tokenData.map { String(format: "%02x", $0) }.joined()
-        guard let self, self.hasEventListeners else { continue }
-        await MainActor.run {
-          self.sendEvent(
-            withName: "LiveActivityTokenUpdated",
-            body: [
-              "activityId": activity.id,
-              "orderId": activity.attributes.orderId,
-              "pushToken": token,
-            ]
+        guard let self else { return }
+        let event = [
+          "activityId": activity.id,
+          "orderId": activity.attributes.orderId,
+          "pushToken": token,
+        ]
+        self.logger.log(
+          "ActivityKit push token received activity=\(activity.id, privacy: .public) token=\(self.tokenFingerprint(token), privacy: .public)"
+        )
+
+        let shouldEmit = self.tokenEventQueue.sync {
+          if !self.hasEventListeners {
+            self.pendingTokenEvents.removeAll {
+              $0["activityId"] == activity.id
+            }
+            self.pendingTokenEvents.append(event)
+          }
+          return self.hasEventListeners
+        }
+
+        if shouldEmit {
+          await MainActor.run {
+            self.logger.log(
+              "Emitting LiveActivityTokenUpdated activity=\(activity.id, privacy: .public)"
+            )
+            self.sendEvent(withName: "LiveActivityTokenUpdated", body: event)
+          }
+        } else {
+          self.logger.log(
+            "Queued LiveActivityTokenUpdated until JS listener starts activity=\(activity.id, privacy: .public)"
           )
         }
       }
+      self?.logger.log(
+        "Push-token observation ended activity=\(activity.id, privacy: .public)"
+      )
     }
   }
 
@@ -128,9 +176,15 @@ class ActivityController: RCTEventEmitter {
         } catch {
           throw ActivityControllerError.unexpected("Failed to decode start params: \(error.localizedDescription)")
         }
+        logger.log(
+          "startLiveActivity decoded order=\(params.orderId, privacy: .public) displayOrder=\(params.displayOrderId, privacy: .public)"
+        )
 
         // This product intentionally supports one active delivery at a time.
         if !Activity<DeliveryAttributes>.activities.isEmpty {
+          logger.log(
+            "startLiveActivity returning existing activity id=\(Activity<DeliveryAttributes>.activities.first?.id ?? "", privacy: .public)"
+          )
           resolve([
             "activityId": Activity<DeliveryAttributes>.activities.first?.id ?? "",
             "pushToken": "",
@@ -141,6 +195,7 @@ class ActivityController: RCTEventEmitter {
 
         // ensure authorization
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+          logger.error("Live Activities are disabled by system authorization")
           reject("ACTIVITY_NOT_AUTHORIZED", "Live activities are not authorized", nil)
           return
         }
@@ -160,6 +215,9 @@ class ActivityController: RCTEventEmitter {
 
         observePushTokens(for: activity)
         let tokenString = activity.pushToken?.map { String(format: "%02x", $0) }.joined() ?? ""
+        logger.log(
+          "ActivityKit activity created id=\(activity.id, privacy: .public) order=\(params.orderId, privacy: .public) initialToken=\(self.tokenFingerprint(tokenString), privacy: .public)"
+        )
 
         let result: [String: Any] = [
           "activityId": activity.id,

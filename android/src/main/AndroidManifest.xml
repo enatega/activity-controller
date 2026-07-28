@@ -13,7 +13,7 @@
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".YallaLiveActivityService"
+            android:name=".DeliveryActivityService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             android:stopWithTask="false" />
