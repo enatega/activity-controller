@@ -216,7 +216,7 @@ class ActivityController: RCTEventEmitter {
         observePushTokens(for: activity)
         let tokenString = activity.pushToken?.map { String(format: "%02x", $0) }.joined() ?? ""
         logger.log(
-          "ActivityKit activity created id=\(activity.id, privacy: .public) order=\(params.orderId, privacy: .public) initialToken=\(tokenFingerprint(tokenString), privacy: .public)"
+          "ActivityKit activity created id=\(activity.id, privacy: .public) order=\(params.orderId, privacy: .public) initialToken=\(self.tokenFingerprint(tokenString), privacy: .public)"
         )
 
         let result: [String: Any] = [
