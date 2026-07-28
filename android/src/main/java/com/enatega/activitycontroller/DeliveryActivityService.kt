@@ -9,15 +9,15 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.content.ContextCompat
 
-class YallaLiveActivityService : Service() {
+class DeliveryActivityService : Service() {
     companion object {
-        private const val TAG = "YallaLiveActivity"
+        private const val TAG = "DeliveryActivity"
         private const val ACTION_START = "com.enatega.activitycontroller.START"
         private const val EXTRA_NOTIFICATION_ID = "notificationId"
         private const val EXTRA_NOTIFICATION = "notification"
 
         fun start(context: Context, notificationId: Int, notification: Notification) {
-            val intent = Intent(context, YallaLiveActivityService::class.java).apply {
+            val intent = Intent(context, DeliveryActivityService::class.java).apply {
                 action = ACTION_START
                 putExtra(EXTRA_NOTIFICATION_ID, notificationId)
                 putExtra(EXTRA_NOTIFICATION, notification)
@@ -26,7 +26,7 @@ class YallaLiveActivityService : Service() {
         }
 
         fun stop(context: Context) {
-            context.stopService(Intent(context, YallaLiveActivityService::class.java))
+            context.stopService(Intent(context, DeliveryActivityService::class.java))
         }
     }
 

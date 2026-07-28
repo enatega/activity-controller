@@ -15,9 +15,10 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/brandLogoExpanded"
             android:layout_width="76dp"
             android:layout_height="30dp"
-            android:contentDescription="Yalla"
+            android:contentDescription="Delivery app"
             android:scaleType="fitStart"
             android:src="@drawable/yalla_logo" />
 
@@ -103,40 +104,40 @@
             android:baselineAligned="false"
             android:orientation="horizontal">
 
-            <LinearLayout style="@style/YallaStage" >
-                <FrameLayout style="@style/YallaStageCircleFrame">
-                    <ImageView android:id="@+id/stagePendingDot" style="@style/YallaStageDot" />
-                    <ImageView android:id="@+id/stagePendingIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_pending" />
+            <LinearLayout style="@style/DeliveryStage" >
+                <FrameLayout style="@style/DeliveryStageCircleFrame">
+                    <ImageView android:id="@+id/stagePendingDot" style="@style/DeliveryStageDot" />
+                    <ImageView android:id="@+id/stagePendingIcon" style="@style/DeliveryStageIcon" android:src="@drawable/ic_stage_pending" />
                 </FrameLayout>
-                <TextView android:id="@+id/stagePendingLabel" style="@style/YallaStageLabel" />
+                <TextView android:id="@+id/stagePendingLabel" style="@style/DeliveryStageLabel" />
             </LinearLayout>
-            <LinearLayout style="@style/YallaStage" >
-                <FrameLayout style="@style/YallaStageCircleFrame">
-                    <ImageView android:id="@+id/stageAcceptedDot" style="@style/YallaStageDot" />
-                    <ImageView android:id="@+id/stageAcceptedIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_accepted" />
+            <LinearLayout style="@style/DeliveryStage" >
+                <FrameLayout style="@style/DeliveryStageCircleFrame">
+                    <ImageView android:id="@+id/stageAcceptedDot" style="@style/DeliveryStageDot" />
+                    <ImageView android:id="@+id/stageAcceptedIcon" style="@style/DeliveryStageIcon" android:src="@drawable/ic_stage_accepted" />
                 </FrameLayout>
-                <TextView android:id="@+id/stageAcceptedLabel" style="@style/YallaStageLabel" />
+                <TextView android:id="@+id/stageAcceptedLabel" style="@style/DeliveryStageLabel" />
             </LinearLayout>
-            <LinearLayout style="@style/YallaStage" >
-                <FrameLayout style="@style/YallaStageCircleFrame">
-                    <ImageView android:id="@+id/stageAssignedDot" style="@style/YallaStageDot" />
-                    <ImageView android:id="@+id/stageAssignedIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_assigned" />
+            <LinearLayout style="@style/DeliveryStage" >
+                <FrameLayout style="@style/DeliveryStageCircleFrame">
+                    <ImageView android:id="@+id/stageAssignedDot" style="@style/DeliveryStageDot" />
+                    <ImageView android:id="@+id/stageAssignedIcon" style="@style/DeliveryStageIcon" android:src="@drawable/ic_stage_assigned" />
                 </FrameLayout>
-                <TextView android:id="@+id/stageAssignedLabel" style="@style/YallaStageLabel" />
+                <TextView android:id="@+id/stageAssignedLabel" style="@style/DeliveryStageLabel" />
             </LinearLayout>
-            <LinearLayout style="@style/YallaStage" >
-                <FrameLayout style="@style/YallaStageCircleFrame">
-                    <ImageView android:id="@+id/stagePickedDot" style="@style/YallaStageDot" />
-                    <ImageView android:id="@+id/stagePickedIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_picked" />
+            <LinearLayout style="@style/DeliveryStage" >
+                <FrameLayout style="@style/DeliveryStageCircleFrame">
+                    <ImageView android:id="@+id/stagePickedDot" style="@style/DeliveryStageDot" />
+                    <ImageView android:id="@+id/stagePickedIcon" style="@style/DeliveryStageIcon" android:src="@drawable/ic_stage_picked" />
                 </FrameLayout>
-                <TextView android:id="@+id/stagePickedLabel" style="@style/YallaStageLabel" />
+                <TextView android:id="@+id/stagePickedLabel" style="@style/DeliveryStageLabel" />
             </LinearLayout>
-            <LinearLayout style="@style/YallaStage" >
-                <FrameLayout style="@style/YallaStageCircleFrame">
-                    <ImageView android:id="@+id/stageDeliveredDot" style="@style/YallaStageDot" />
-                    <ImageView android:id="@+id/stageDeliveredIcon" style="@style/YallaStageIcon" android:src="@drawable/ic_stage_delivered" />
+            <LinearLayout style="@style/DeliveryStage" >
+                <FrameLayout style="@style/DeliveryStageCircleFrame">
+                    <ImageView android:id="@+id/stageDeliveredDot" style="@style/DeliveryStageDot" />
+                    <ImageView android:id="@+id/stageDeliveredIcon" style="@style/DeliveryStageIcon" android:src="@drawable/ic_stage_delivered" />
                 </FrameLayout>
-                <TextView android:id="@+id/stageDeliveredLabel" style="@style/YallaStageLabel" />
+                <TextView android:id="@+id/stageDeliveredLabel" style="@style/DeliveryStageLabel" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>
@@ -153,6 +154,7 @@
         android:visibility="gone">
 
         <ImageView
+            android:id="@+id/riderImage"
             android:layout_width="50dp"
             android:layout_height="55dp"
             android:contentDescription="Rider"

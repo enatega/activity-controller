@@ -8,9 +8,10 @@
     android:paddingHorizontal="12dp">
 
     <ImageView
+        android:id="@+id/brandLogoCompact"
         android:layout_width="72dp"
         android:layout_height="29dp"
-        android:contentDescription="Yalla"
+        android:contentDescription="Delivery app"
         android:scaleType="fitStart"
         android:src="@drawable/yalla_logo" />
 
